@@ -48,8 +48,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Use a Proxy or a custom getter pattern so missing keys ALWAYS default to true (collapsed)
-  const [collapsedCountries, setCollapsedCountries] = useState<Record<string, boolean>>({});
+  // Foolproof collapse management: empty array means everything is collapsed by default
+  const [expandedCountries, setExpandedCountries] = useState<string[]>([]);
   const [showPrimer, setShowPrimer] = useState(false);
 
   // Feature States
@@ -62,15 +62,7 @@ export default function Home() {
     fetch('/api/weather?list=true')
       .then((res) => res.json())
       .then((json) => {
-        if (json.airports) {
-          setAirports(json.airports);
-          // Pre-populate every country as true (collapsed) on fetch
-          const initialMap: Record<string, boolean> = {};
-          json.airports.forEach((item: AirportItem) => {
-            initialMap[item.country] = true;
-          });
-          setCollapsedCountries(initialMap);
-        }
+        if (json.airports) setAirports(json.airports);
       })
       .catch((err) => console.error('Failed to load airport list', err));
     
@@ -145,11 +137,11 @@ export default function Home() {
   }, {} as Record<string, string[]>);
 
   const toggleCountry = (country: string) => {
-    setCollapsedCountries(prev => {
-      // If currently true (or undefined), make it false (expanded). If false, make it true.
-      const currentState = prev[country] ?? true;
-      return { ...prev, [country]: !currentState };
-    });
+    setExpandedCountries(prev => 
+      prev.includes(country) 
+        ? prev.filter(c => c !== country) 
+        : [...prev, country]
+    );
   };
 
   const getCategoryClass = (cat: string) => {
@@ -226,8 +218,7 @@ export default function Home() {
             <div className="text-center py-6 text-xs text-slate-300">No airports found</div>
           ) : (
             Object.entries(groupedByCountry).map(([country, codes]) => {
-              // FORCE explicit default to true (collapsed) if not explicitly toggled to false
-              const isCollapsed = collapsedCountries[country] === undefined ? true : collapsedCountries[country];
+              const isExpanded = expandedCountries.includes(country);
               const flag = getCountryFlag(country);
               return (
                 <div key={country} className="space-y-1">
@@ -239,10 +230,10 @@ export default function Home() {
                       <span>{flag}</span>
                       <span className="truncate">{country} ({codes.length})</span>
                     </span>
-                    {isCollapsed ? <ChevronRight className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
+                    {!isExpanded ? <ChevronRight className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
                   </button>
 
-                  {!isCollapsed && (
+                  {isExpanded && (
                     <div className="grid grid-cols-2 gap-1.5 pl-1 pt-1">
                       {codes.map((code) => {
                         const isSelected = icao === code;
