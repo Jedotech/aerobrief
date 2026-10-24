@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'react';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Aviation Weather & Runway Resolver',
