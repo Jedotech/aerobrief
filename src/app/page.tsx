@@ -62,12 +62,12 @@ export default function Home() {
       .then((json) => {
         if (json.airports) {
           setAirports(json.airports);
-          // Automatically set all countries to collapsed (true) by default
-          const initialCollapsed: Record<string, boolean> = {};
+          // Explicitly map every country to true (collapsed) by default
+          const countryMap: Record<string, boolean> = {};
           json.airports.forEach((item: AirportItem) => {
-            initialCollapsed[item.country] = true;
+            countryMap[item.country] = true;
           });
-          setCollapsedCountries(initialCollapsed);
+          setCollapsedCountries(countryMap);
         }
       })
       .catch((err) => console.error('Failed to load airport list', err));
@@ -220,7 +220,7 @@ export default function Home() {
             <div className="text-center py-6 text-xs text-slate-300">No airports found</div>
           ) : (
             Object.entries(groupedByCountry).map(([country, codes]) => {
-              const isCollapsed = collapsedCountries[country] ?? true; // Default to true (collapsed)
+              const isCollapsed = collapsedCountries[country] ?? true;
               const flag = getCountryFlag(country);
               return (
                 <div key={country} className="space-y-1">
