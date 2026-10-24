@@ -60,7 +60,15 @@ export default function Home() {
     fetch('/api/weather?list=true')
       .then((res) => res.json())
       .then((json) => {
-        if (json.airports) setAirports(json.airports);
+        if (json.airports) {
+          setAirports(json.airports);
+          // Explicitly initialize every fetched country to true (collapsed)
+          const initialMap: Record<string, boolean> = {};
+          json.airports.forEach((item: AirportItem) => {
+            initialMap[item.country] = true;
+          });
+          setCollapsedCountries(initialMap);
+        }
       })
       .catch((err) => console.error('Failed to load airport list', err));
     
@@ -135,10 +143,10 @@ export default function Home() {
   }, {} as Record<string, string[]>);
 
   const toggleCountry = (country: string) => {
-    setCollapsedCountries(prev => ({ 
-      ...prev, 
-      [country]: !(prev[country] !== false) 
-    }));
+    setCollapsedCountries(prev => {
+      const current = prev[country] ?? true;
+      return { ...prev, [country]: !current };
+    });
   };
 
   const getCategoryClass = (cat: string) => {
@@ -215,8 +223,8 @@ export default function Home() {
             <div className="text-center py-6 text-xs text-slate-300">No airports found</div>
           ) : (
             Object.entries(groupedByCountry).map(([country, codes]) => {
-              // Strict enforcement: Default to collapsed (true) unless explicitly toggled false
-              const isCollapsed = collapsedCountries[country] !== false;
+              // Strict default to true (collapsed)
+              const isCollapsed = collapsedCountries[country] ?? true;
               const flag = getCountryFlag(country);
               return (
                 <div key={country} className="space-y-1">
