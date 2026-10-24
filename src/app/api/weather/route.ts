@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +19,6 @@ export async function GET(request: Request) {
     if (icao) {
       const code = icao.trim().toUpperCase();
       
-      // Fetch station METAR observation
       const metarRes = await fetch(`https://aviationweather.gov/api/data/metar?ids=${code}&format=json`, {
         headers: { 'User-Agent': 'AeroBrief/1.0' }
       });
@@ -31,7 +30,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: `No METAR data found for ${code}` }, { status: 404 });
       }
 
-      // Fetch runways from Supabase
       const { data: runways, error: rwyError } = await supabase
         .from('runways')
         .select('*')
