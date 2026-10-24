@@ -47,6 +47,8 @@ export default function Home() {
   const [runways, setRunways] = useState<RunwayCalc[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Use a Proxy or a custom getter pattern so missing keys ALWAYS default to true (collapsed)
   const [collapsedCountries, setCollapsedCountries] = useState<Record<string, boolean>>({});
   const [showPrimer, setShowPrimer] = useState(false);
 
@@ -62,7 +64,7 @@ export default function Home() {
       .then((json) => {
         if (json.airports) {
           setAirports(json.airports);
-          // Explicitly initialize every fetched country to true (collapsed)
+          // Pre-populate every country as true (collapsed) on fetch
           const initialMap: Record<string, boolean> = {};
           json.airports.forEach((item: AirportItem) => {
             initialMap[item.country] = true;
@@ -144,8 +146,9 @@ export default function Home() {
 
   const toggleCountry = (country: string) => {
     setCollapsedCountries(prev => {
-      const current = prev[country] ?? true;
-      return { ...prev, [country]: !current };
+      // If currently true (or undefined), make it false (expanded). If false, make it true.
+      const currentState = prev[country] ?? true;
+      return { ...prev, [country]: !currentState };
     });
   };
 
@@ -223,8 +226,8 @@ export default function Home() {
             <div className="text-center py-6 text-xs text-slate-300">No airports found</div>
           ) : (
             Object.entries(groupedByCountry).map(([country, codes]) => {
-              // Strict default to true (collapsed)
-              const isCollapsed = collapsedCountries[country] ?? true;
+              // FORCE explicit default to true (collapsed) if not explicitly toggled to false
+              const isCollapsed = collapsedCountries[country] === undefined ? true : collapsedCountries[country];
               const flag = getCountryFlag(country);
               return (
                 <div key={country} className="space-y-1">
