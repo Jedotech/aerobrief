@@ -18,23 +18,42 @@ interface AirportItem {
 }
 
 const getCountryFlag = (country: string): string => {
-  switch (country.toLowerCase()) {
-    case 'india': return '🇮🇳';
-    case 'united arab emirates': return '🇦🇪';
-    case 'qatar': return '🇶🇦';
-    case 'singapore': return '🇸🇬';
-    case 'hong kong': return '🇭🇰';
-    case 'japan': return '🇯🇵';
-    case 'south korea': return '🇰🇷';
-    case 'thailand': return '🇹🇭';
-    case 'australia': return '🇦🇺';
-    case 'united kingdom': return '🇬🇧';
-    case 'france': return '🇫🇷';
-    case 'netherlands': return '🇳🇱';
-    case 'germany': return '🇩🇪';
-    case 'turkey': return '🇹🇷';
-    case 'united states': return '🇺🇸';
-    case 'canada': return '🇨🇦';
+  const key = country.toLowerCase().trim();
+  switch (key) {
+    case 'india':
+    case 'in': return '🇮🇳';
+    case 'united arab emirates':
+    case 'ae': return '🇦🇪';
+    case 'qatar':
+    case 'qa': return '🇶🇦';
+    case 'singapore':
+    case 'sg': return '🇸🇬';
+    case 'hong kong':
+    case 'hk': return '🇭🇰';
+    case 'japan':
+    case 'jp': return '🇯🇵';
+    case 'south korea':
+    case 'kr': return '🇰🇷';
+    case 'thailand':
+    case 'th': return '🇹🇭';
+    case 'australia':
+    case 'au': return '🇦🇺';
+    case 'united kingdom':
+    case 'gb':
+    case 'uk': return '🇬🇧';
+    case 'france':
+    case 'fr': return '🇫🇷';
+    case 'netherlands':
+    case 'nl': return '🇳🇱';
+    case 'germany':
+    case 'de': return '🇩🇪';
+    case 'turkey':
+    case 'tr': return '🇹🇷';
+    case 'united states':
+    case 'us':
+    case 'usa': return '🇺🇸';
+    case 'canada':
+    case 'ca': return '🇨🇦';
     default: return '🌐';
   }
 };
@@ -48,7 +67,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Track explicitly expanded countries. Anything not in this array is collapsed by default!
+  // Collapsed by default (empty array means all country lists start collapsed)
   const [expandedCountries, setExpandedCountries] = useState<string[]>([]);
   const [showPrimer, setShowPrimer] = useState(false);
 
@@ -154,7 +173,6 @@ export default function Home() {
     }
   };
 
-  // Unit conversion helpers
   const displayWindSpeed = data?.metar?.wspd !== undefined 
     ? (unitWind === 'MPH' ? Math.round(data.metar.wspd * 1.15078) : data.metar.wspd)
     : 0;
@@ -165,8 +183,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen text-slate-100 flex flex-col lg:flex-row font-sans relative overflow-x-hidden bg-[url('/background.png')] bg-cover bg-center">
-      
-      {/* Background Overlay */}
       <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[0.5px] z-0 pointer-events-none" />
 
       {/* LEFT SIDEBAR: Country-Wise Airport Directory */}
@@ -178,7 +194,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Favorites / Quick-Pin Hubs Section */}
         {favorites.length > 0 && (
           <div className="p-3 border-b border-slate-700/60 bg-slate-950/40">
             <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -226,14 +241,13 @@ export default function Home() {
                     onClick={() => toggleCountry(country)}
                     className="w-full flex items-center justify-between text-xs font-semibold text-slate-200 uppercase tracking-wider py-1 px-1 hover:text-white transition drop-shadow-sm"
                   >
-                    <span className="flex items-center gap-1.5 truncate">
-                      <span>{flag}</span>
+                    <span className="flex items-center gap-2 truncate">
+                      <span className="text-base">{flag}</span>
                       <span className="truncate">{country} ({codes.length})</span>
                     </span>
                     {!isExpanded ? <ChevronRight className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
                   </button>
 
-                  {/* Explicitly rendered only when isExpanded is true */}
                   {isExpanded && (
                     <div className="grid grid-cols-2 gap-1.5 pl-1 pt-1">
                       {codes.map((code) => {
@@ -295,7 +309,6 @@ export default function Home() {
             </div>
           </header>
 
-          {/* Newcomer Primer Card */}
           {showPrimer && (
             <div className="p-4 bg-sky-950/60 backdrop-blur-md border border-sky-700/60 rounded-lg text-xs space-y-3 text-slate-100 shadow-2xl">
               <div className="font-bold text-sky-300 uppercase tracking-wider">Aviation Weather & Architecture Overview</div>
@@ -328,7 +341,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Unit Toggle & Search Bar */}
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="flex gap-2 flex-1">
               <input
@@ -355,7 +367,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Unit Toggles */}
             <div className="flex items-center gap-1 bg-slate-900/70 backdrop-blur-sm border border-slate-700 rounded p-1 text-xs font-mono justify-center shadow-md">
               <button
                 onClick={() => setUnitWind(unitWind === 'KT' ? 'MPH' : 'KT')}
@@ -395,7 +406,6 @@ export default function Home() {
                 {data.metar.rawOb}
               </div>
 
-              {/* METAR Trends Graph / Toggle Section */}
               {showTrends && (
                 <div className="p-3 bg-slate-950/75 backdrop-blur-sm rounded border border-slate-700/60 space-y-2 text-xs shadow-inner">
                   <div className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Hourly Trend Indicators</div>
@@ -433,7 +443,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Interactive Runway Compass / Visual Rose Widget */}
               <div className="p-4 bg-slate-950/60 backdrop-blur-sm rounded border border-slate-700/60 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
                 <div className="space-y-1 text-center sm:text-left">
                   <div className="text-xs font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5 justify-center sm:justify-start drop-shadow-sm">
@@ -443,7 +452,6 @@ export default function Home() {
                     Wind vector blowing from <strong className="text-white">{data.metar.wdir ?? 0}°</strong> at <strong className="text-white">{displayWindSpeed} {unitWind}</strong>.
                   </p>
                 </div>
-                {/* SVG Compass Rose Graphic */}
                 <div className="relative w-20 h-20 shrink-0 flex items-center justify-center bg-slate-900/90 rounded-full border border-slate-700 shadow-inner">
                   <span className="absolute top-1 text-[9px] font-bold text-slate-300">N</span>
                   <span className="absolute bottom-1 text-[9px] font-bold text-slate-300">S</span>
@@ -468,7 +476,6 @@ export default function Home() {
                     {runways.map((r) => (
                       <div key={r.ident} className="flex justify-between items-center p-3 bg-slate-950/60 backdrop-blur-sm rounded border border-slate-700/60 text-sm shadow-md">
                         <div className="flex items-center gap-2">
-                          {/* Mini Runway Alignment Icon */}
                           <div className="w-6 h-6 rounded bg-slate-900 border border-slate-700 flex items-center justify-center text-sky-300 font-mono text-[10px]">
                             <span style={{ transform: `rotate(${r.heading}deg)` }}>↗</span>
                           </div>
