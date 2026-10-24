@@ -47,7 +47,27 @@ export default function Home() {
   const [runways, setRunways] = useState<RunwayCalc[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [collapsedCountries, setCollapsedCountries] = useState<Record<string, boolean>>({});
+  
+  // Pre-initialize all known countries to true (collapsed) by default
+  const [collapsedCountries, setCollapsedCountries] = useState<Record<string, boolean>>({
+    'India': true,
+    'United Arab Emirates': true,
+    'Qatar': true,
+    'Singapore': true,
+    'Hong Kong': true,
+    'Japan': true,
+    'South Korea': true,
+    'Thailand': true,
+    'Australia': true,
+    'United Kingdom': true,
+    'France': true,
+    'Netherlands': true,
+    'Germany': true,
+    'Turkey': true,
+    'United States': true,
+    'Canada': true,
+  });
+  
   const [showPrimer, setShowPrimer] = useState(false);
 
   // New Feature States
@@ -62,12 +82,16 @@ export default function Home() {
       .then((json) => {
         if (json.airports) {
           setAirports(json.airports);
-          // Set all countries to true (collapsed) by default
-          const countryMap: Record<string, boolean> = {};
-          json.airports.forEach((item: AirportItem) => {
-            countryMap[item.country] = true;
+          // Ensure any dynamic countries fetched are also defaulted to collapsed
+          setCollapsedCountries(prev => {
+            const nextMap = { ...prev };
+            json.airports.forEach((item: AirportItem) => {
+              if (nextMap[item.country] === undefined) {
+                nextMap[item.country] = true;
+              }
+            });
+            return nextMap;
           });
-          setCollapsedCountries(countryMap);
         }
       })
       .catch((err) => console.error('Failed to load airport list', err));
@@ -220,8 +244,8 @@ export default function Home() {
             <div className="text-center py-6 text-xs text-slate-300">No airports found</div>
           ) : (
             Object.entries(groupedByCountry).map(([country, codes]) => {
-              // Enforce true (collapsed) as the strict default if not explicitly toggled
-              const isCollapsed = collapsedCountries[country] !== false; 
+              // Explicitly evaluate to true (collapsed) if not explicitly toggled false
+              const isCollapsed = collapsedCountries[country] ?? true;
               const flag = getCountryFlag(country);
               return (
                 <div key={country} className="space-y-1">
