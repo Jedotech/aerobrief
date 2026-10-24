@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plane, AlertCircle, ChevronDown, ChevronRight, Info, Star, Compass, TrendingUp, Settings } from 'lucide-react';
+import { Search, Plane, AlertCircle, ChevronDown, ChevronRight, Info, Star, Compass, TrendingUp } from 'lucide-react';
 
 interface RunwayCalc {
   ident: string;
@@ -47,30 +47,10 @@ export default function Home() {
   const [runways, setRunways] = useState<RunwayCalc[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  // Pre-initialize all known countries to true (collapsed) by default
-  const [collapsedCountries, setCollapsedCountries] = useState<Record<string, boolean>>({
-    'India': true,
-    'United Arab Emirates': true,
-    'Qatar': true,
-    'Singapore': true,
-    'Hong Kong': true,
-    'Japan': true,
-    'South Korea': true,
-    'Thailand': true,
-    'Australia': true,
-    'United Kingdom': true,
-    'France': true,
-    'Netherlands': true,
-    'Germany': true,
-    'Turkey': true,
-    'United States': true,
-    'Canada': true,
-  });
-  
+  const [collapsedCountries, setCollapsedCountries] = useState<Record<string, boolean>>({});
   const [showPrimer, setShowPrimer] = useState(false);
 
-  // New Feature States
+  // Feature States
   const [favorites, setFavorites] = useState<string[]>(['YSSY', 'VOMM', 'KJFK']);
   const [unitWind, setUnitWind] = useState<'KT' | 'MPH'>('KT');
   const [unitPressure, setUnitPressure] = useState<'hPa' | 'InHg'>('hPa');
@@ -80,19 +60,7 @@ export default function Home() {
     fetch('/api/weather?list=true')
       .then((res) => res.json())
       .then((json) => {
-        if (json.airports) {
-          setAirports(json.airports);
-          // Ensure any dynamic countries fetched are also defaulted to collapsed
-          setCollapsedCountries(prev => {
-            const nextMap = { ...prev };
-            json.airports.forEach((item: AirportItem) => {
-              if (nextMap[item.country] === undefined) {
-                nextMap[item.country] = true;
-              }
-            });
-            return nextMap;
-          });
-        }
+        if (json.airports) setAirports(json.airports);
       })
       .catch((err) => console.error('Failed to load airport list', err));
     
@@ -167,7 +135,10 @@ export default function Home() {
   }, {} as Record<string, string[]>);
 
   const toggleCountry = (country: string) => {
-    setCollapsedCountries(prev => ({ ...prev, [country]: !prev[country] }));
+    setCollapsedCountries(prev => ({ 
+      ...prev, 
+      [country]: !(prev[country] !== false) 
+    }));
   };
 
   const getCategoryClass = (cat: string) => {
@@ -192,7 +163,7 @@ export default function Home() {
   return (
     <div className="min-h-screen text-slate-100 flex flex-col lg:flex-row font-sans relative overflow-x-hidden bg-[url('/background.png')] bg-cover bg-center">
       
-      {/* Brighter, vivid glassmorphism overlay allowing the daylight tower background to shine through */}
+      {/* Background Overlay */}
       <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[0.5px] z-0 pointer-events-none" />
 
       {/* LEFT SIDEBAR: Country-Wise Airport Directory */}
@@ -244,8 +215,8 @@ export default function Home() {
             <div className="text-center py-6 text-xs text-slate-300">No airports found</div>
           ) : (
             Object.entries(groupedByCountry).map(([country, codes]) => {
-              // Explicitly evaluate to true (collapsed) if not explicitly toggled false
-              const isCollapsed = collapsedCountries[country] ?? true;
+              // Strict enforcement: Default to collapsed (true) unless explicitly toggled false
+              const isCollapsed = collapsedCountries[country] !== false;
               const flag = getCountryFlag(country);
               return (
                 <div key={country} className="space-y-1">
