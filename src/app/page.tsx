@@ -48,7 +48,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Foolproof collapse management: empty array means everything is collapsed by default
+  // Track explicitly expanded countries. Anything not in this array is collapsed by default!
   const [expandedCountries, setExpandedCountries] = useState<string[]>([]);
   const [showPrimer, setShowPrimer] = useState(false);
 
@@ -233,6 +233,7 @@ export default function Home() {
                     {!isExpanded ? <ChevronRight className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
                   </button>
 
+                  {/* Explicitly rendered only when isExpanded is true */}
                   {isExpanded && (
                     <div className="grid grid-cols-2 gap-1.5 pl-1 pt-1">
                       {codes.map((code) => {
